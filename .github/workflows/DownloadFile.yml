@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     # 核心逻辑：只有当 commit message 包含 'download' (不区分大小写) 时，才运行此 job
     if: contains(github.event.head_commit.message, 'download')
