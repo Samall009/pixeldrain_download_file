@@ -35,4 +35,4 @@ if __name__ == "__main__":
     # Windows X-Lite 'Optimum 11' 26H1 v2                   ZdPxkVmH
 
 
-    download_and_get_size("https://pixeldrain.com/api/file/NU59tHU2?download", download_folder)
+    download_and_get_size("https://pixeldrain.com/api/file/ZdPxkVmH?download", download_folder)
