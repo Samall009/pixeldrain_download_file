@@ -30,4 +30,10 @@ def download_and_get_size(url, download_folder):
 
 if __name__ == "__main__":
     download_folder = f"./dist"
-    # download_and_get_size("https://pixeldrain.com/api/file/HUc25t6o?download", download_folder)
+    # Windows X-Lite “Ultimate 11” Cobalt v2                k7Fp3JuQ
+    # Windows X-Lite “Ultimate 11 Neon” 24H2 v3             VUN49zuL
+    # Windows X-Lite 'Ultimate 11' 24H2 Home                NU59tHU2
+    # Windows X-Lite 'Optimum 11' 26H1 v2                   ZdPxkVmH
+
+
+    download_and_get_size("https://pixeldrain.com/api/file/k7Fp3JuQ?download", download_folder)
