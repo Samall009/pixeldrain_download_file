@@ -1,0 +1,93 @@
+name: PIXELDRAIN-DOWNLOAD
+
+on: 
+  push:
+    # 建议限制分支，避免在所有分支上都产生无意义的检查
+    branches: [ main, master ] 
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    # 核心逻辑：只有当 commit message 包含 'download' (不区分大小写) 时，才运行此 job
+    if: contains(github.event.head_commit.message, 'download')
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 Python 环境并运行下载脚本
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      
+      # 下载文件
+      - name: Download files
+        run: python pixeldrain.py
+
+      # 验证文件
+      - name: Verify downloaded files
+        run: ls -la ./dist
+
+      # 核心步骤：查找大文件、分片、生成分支并循环提交
+      - name: Split Large Files, Loop Commit and Push
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          # 1. 配置 Git 机器人身份
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 2. 查找 ./dist 下大于 50MB 的文件并进行分片
+          echo "🔍 正在检查是否有大于 50MB 的文件需要分片..."
+          find ./dist -type f -size +50M | while read -r large_file; do
+            echo "📦 发现大文件: $large_file"
+            
+            # 定义输出前缀 (例如: ./dist/myfile.zip -> ./dist/myfile.zip.part_)
+            output_prefix="${large_file}.part_"
+            
+            # 使用 split 命令按 50MB 切分 (-b 50m)，并使用数字后缀 (-d)
+            split -b 50m -d "$large_file" "$output_prefix"
+            
+            # 切分成功后，删除原始大文件以释放磁盘空间
+            rm -f "$large_file"
+            echo "✅ 分片完成，已清理原文件。"
+          done
+          
+          # 3. 提取基础文件名并创建动态分支
+          # 注意：现在匹配的是分片后的文件，格式为 *.part_00, *.part_01 等
+          FILE_PATH=$(ls ./dist/*.part_* 2>/dev/null | head -n 1)
+          if [ -z "$FILE_PATH" ]; then
+            echo "❌ 错误: 未在 ./dist 目录下找到分片文件 (*.part_*)！"
+            exit 1
+          fi
+          
+          BASE_NAME=$(basename "$FILE_PATH")
+          # 去除 .part_xx 后缀作为分支名
+          BRANCH_NAME="${BASE_NAME%.part_*}"
+          
+          echo "🚀 即将推送到动态分支: $BRANCH_NAME"
+          git checkout -B "$BRANCH_NAME"
+          
+          # 4. 清理旧文件并准备目标目录
+          rm -rf assets/*
+          mkdir -p assets
+          mv ./dist/*.part_* ./assets/ || { echo "❌ 移动分片文件失败"; exit 1; }
+          
+          # 5. 循环遍历 assets 目录下的所有分片文件，逐个提交并推送
+          for file in ./assets/*; do
+            if [ -f "$file" ]; then
+              echo "📤 正在处理文件: $file"
+              
+              # 添加当前单个文件
+              git add "$file"
+              
+              # 提交更改
+              git commit -m "chore: upload split part $(basename "$file")" || { echo "⚠️ 跳过无变更的提交"; continue; }
+              
+              # 推送到远程分支 (--force-with-lease 保证安全覆盖)
+              git push origin "$BRANCH_NAME" --force-with-lease
+            fi
+          done
