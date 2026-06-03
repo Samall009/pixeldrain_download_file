@@ -25,7 +25,9 @@ jobs:
       
       # 下载文件
       - name: Download files
-        run: python pixeldrain.py
+        run: |
+          pip install requests beautifulsoup4
+          python pixeldrain.py
 
       # 验证文件
       - name: Verify downloaded files
