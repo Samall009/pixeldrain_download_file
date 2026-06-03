@@ -72,7 +72,7 @@ jobs:
           # 去除无效字符
           SAFE_BASE_NAME=$(echo "$BASE_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g; s/-\+/-/g')
           # 去除 .part_xx 后缀作为分支名
-          BRANCH_NAME="assets-${SAFE_BASE_NAME%.part_*}"
+          BRANCH_NAME="assets${SAFE_BASE_NAME%.part_*}"
           
           echo "🚀 即将推送到动态分支: $BRANCH_NAME"
           git checkout -B "$BRANCH_NAME"
