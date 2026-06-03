@@ -26,7 +26,7 @@ jobs:
       # 下载文件
       - name: Download files
         run: |
-          pip install requests beautifulsoup4
+          pip install requests
           python pixeldrain.py
 
       # 验证文件
@@ -67,10 +67,10 @@ jobs:
           fi
           
           BASE_NAME=$(basename "$FILE_PATH")
-          # 去除空格
-          NEW_BASE_NAME="${BASE_NAME// /-}"
+          # 去除无效字符
+          SAFE_BASE_NAME=$(echo "$BASE_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g; s/-\+/-/g')
           # 去除 .part_xx 后缀作为分支名
-          BRANCH_NAME="${BASE_NAME%.part_*}"
+          BRANCH_NAME="${SAFE_BASE_NAME%.part_*}"
           
           echo "🚀 即将推送到动态分支: $BRANCH_NAME"
           git checkout -B "$BRANCH_NAME"
