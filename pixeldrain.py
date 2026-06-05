@@ -33,6 +33,7 @@ if __name__ == "__main__":
     # Windows X-Lite 'Ultimate 11' Neon” 24H2 v3             VUN49zuL
     # Windows X-Lite 'Ultimate 11' 24H2 Home                NU59tHU2
     # Windows X-Lite 'Optimum 11' 26H1 v2                   ZdPxkVmH
+    # 字体补齐                                              3vMQQGjv
 
 
-    download_and_get_size("https://pixeldrain.com/api/file/ZdPxkVmH?download", download_folder)
+    download_and_get_size("https://pixeldrain.com/api/file/3vMQQGjv?download", download_folder)
